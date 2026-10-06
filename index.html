@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema House</title>
+    <!-- Google Fonts & SweetAlert CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="app-header">
+        <div class="logo-container">
+            <h1>🎬 Cinema House</h1>
+            <span class="badge">Total Movies: <span id="totalMoviesCount">0</span></span>
+        </div>
+        <div class="header-actions">
+            <input type="text" id="searchInput" placeholder="Search movies by title or genre...">
+            <button id="openModalBtn" class="btn-primary">+ Add Movie</button>
+        </div>
+    </header>
+
+    <!-- Main Movie Grid Container -->
+    <main class="container">
+        <div id="movieGrid" class="movie-grid">
+            <!-- Dynamic Movie Cards will render here -->
+        </div>
+    </main>
+
+    <!-- Modal Form for Add / Edit -->
+    <div id="movieModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModalBtn" class="close-btn">&times;</span>
+            <h2 id="modalTitle">Add Movie</h2>
+            <form id="movieForm">
+                <div class="form-group">
+                    <label for="movieTitle">Title</label>
+                    <input type="text" id="movieTitle" required placeholder="Enter movie title">
+                </div>
+                <div class="form-group">
+                    <label for="movieGenre">Genre</label>
+                    <input type="text" id="movieGenre" required placeholder="e.g. Action/Drama">
+                </div>
+                <div class="form-group">
+                    <label for="movieYear">Year</label>
+                    <input type="text" id="movieYear" required placeholder="e.g. 2024">
+                </div>
+                <div class="form-group">
+                    <label for="movieDescription">Description / Overview</label>
+                    <textarea id="movieDescription" rows="3" required placeholder="Enter short plot overview"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="movieImage">Poster Image URL</label>
+                    <input type="url" id="movieImage" required placeholder="Paste image web link">
+                </div>
+                <button type="submit" class="btn-submit" id="saveBtnText">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Link -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
