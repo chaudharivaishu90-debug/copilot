@@ -1,3 +1,22 @@
+// Firebase Imports (Module साऊंडमध्ये)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Firebase Configuration (तुमच्या Firebase प्रोजेक्टची माहिती इथे येईल)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// DOM Elements
 const openModalBtn = document.getElementById('openModalBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const movieModal = document.getElementById('movieModal');
@@ -8,9 +27,19 @@ const totalMoviesCount = document.getElementById('totalMoviesCount');
 const modalTitle = document.getElementById('modalTitle');
 const saveBtnText = document.getElementById('saveBtnText');
 
-let movies = JSON.parse(localStorage.getItem('movies')) || [];
+let movies = [];
 let editMode = false;
 let editMovieId = null;
+
+// Page Load वरून सर्व मुव्हीज क्लाउडवरून फेच करणे
+async function fetchMovies() {
+    movies = [];
+    const querySnapshot = await getDocs(collection(db, "movies"));
+    querySnapshot.forEach((docSnap) => {
+        movies.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    renderMovies(movies);
+}
 
 openModalBtn.addEventListener('click', () => openModal());
 closeModalBtn.addEventListener('click', () => closeModal());
@@ -56,7 +85,8 @@ function closeModal() {
     editMovieId = null;
 }
 
-function saveMovie() {
+// मुव्ही सेव्ह किंवा अपडेट करणे (Cloud Database वापरून)
+async function saveMovie() {
     const title = document.getElementById('movieTitle').value.trim();
     const genre = document.getElementById('movieGenre').value.trim();
     const year = document.getElementById('movieYear').value.trim();
@@ -66,12 +96,10 @@ function saveMovie() {
     if (!title || !genre || !year || !description || !image) return;
 
     if (editMode) {
-        movies = movies.map(movie => {
-            if (movie.id === editMovieId) {
-                return { id: movie.id, title, genre, year, description, image };
-            }
-            return movie;
-        });
+        // Firebase मध्ये मुव्ही अपडेट करणे
+        const movieRef = doc(db, "movies", editMovieId);
+        await updateDoc(movieRef, { title, genre, year, description, image });
+        
         Swal.fire({
             icon: 'success',
             title: 'Updated!',
@@ -82,15 +110,15 @@ function saveMovie() {
             color: '#fff'
         });
     } else {
-        const newMovie = {
-            id: Date.now().toString(),
+        // Firebase मध्ये नवीन मुव्ही ॲड करणे
+        await addDoc(collection(db, "movies"), {
             title,
             genre,
             year,
             description,
             image
-        };
-        movies.push(newMovie);
+        });
+
         Swal.fire({
             icon: 'success',
             title: 'Added!',
@@ -102,8 +130,8 @@ function saveMovie() {
         });
     }
 
-    syncAndRender();
     closeModal();
+    fetchMovies(); // डेटा पुन्हा लोड करून स्क्रीन अपडेट करणे
 }
 
 function renderMovies(moviesToRender) {
@@ -141,7 +169,8 @@ function renderMovies(moviesToRender) {
     });
 }
 
-document.addEventListener('click', (e) => {
+// Edit आणि Delete चे इव्हेंट्स
+document.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('.btn-edit');
     const deleteBtn = e.target.closest('.btn-delete');
 
@@ -165,10 +194,12 @@ document.addEventListener('click', (e) => {
             confirmButtonText: 'Yes, delete it!',
             background: '#1a1a1a',
             color: '#fff'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                movies = movies.filter(movie => movie.id !== id);
-                syncAndRender();
+                // Firebase मधून मुव्ही डिलीट करणे
+                await deleteDoc(doc(db, "movies", id));
+                fetchMovies();
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Deleted!',
@@ -192,9 +223,5 @@ function filterMovies(query) {
     renderMovies(filtered);
 }
 
-function syncAndRender() {
-    localStorage.setItem('movies', JSON.stringify(movies));
-    renderMovies(movies);
-}
-
-renderMovies(movies);
+// ॲप सुरू झाल्यावर मुव्हीज लोड करणे
+fetchMovies();
