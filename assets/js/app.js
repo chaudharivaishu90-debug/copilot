@@ -198,4 +198,3 @@ function syncAndRender() {
 }
 
 renderMovies(movies);
-localStorage.clear();
